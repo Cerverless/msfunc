@@ -34,6 +34,9 @@ jobs:
         generator: Ninja
 
 # https://trstringer.com/github-actions-create-release-upload-artifacts/
+    - name: version
+      run: echo "0.0.1"
+      id: version
     - name: Release
       uses: actions/create-release@v1
       id: create_release
