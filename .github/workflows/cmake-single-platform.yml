@@ -34,12 +34,13 @@ jobs:
       with:
         generator: Ninja
 
+# https://trstringer.com/github-actions-create-release-upload-artifacts/
     - name: release
       uses: actions/create-release@v1
       id: create_release
       with:
         draft: true
         prerelease: true
-        release_name: ${{ steps.version.outputs.version }}
+        release_name: alpha
         tag_name: ${{ github.ref }}
         #body_path: CHANGELOG.md
