@@ -44,7 +44,7 @@ jobs:
         draft: false
         prerelease: true
         release_name: ${{ steps.version.outputs.version }}
-        tag_name: alpha
+        tag_name: $ {{ GITHUB_SHA }}
         #body_path: CHANGELOG.md
       env:
         GITHUB_TOKEN: ${{ github.token }}
