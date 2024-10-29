@@ -44,3 +44,5 @@ jobs:
         release_name: alpha
         tag_name: ${{ github.ref }}
         #body_path: CHANGELOG.md
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
