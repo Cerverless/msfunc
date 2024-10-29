@@ -9,8 +9,7 @@ on:
   pull_request:
     branches: [ "main" ]
 
-permissions:
-  actions: write
+permissions: write-all
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
@@ -35,7 +34,7 @@ jobs:
         generator: Ninja
 
 # https://trstringer.com/github-actions-create-release-upload-artifacts/
-    - name: release
+    - name: Release
       uses: actions/create-release@v1
       id: create_release
       with:
