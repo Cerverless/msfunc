@@ -45,3 +45,13 @@ jobs:
         #body_path: CHANGELOG.md
       env:
         GITHUB_TOKEN: ${{ github.token }}
+
+    - name: upload library
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./bin/libmsfunc.a
+        asset_name: libmsfunc.a
+        asset_content_type: application/gzip
