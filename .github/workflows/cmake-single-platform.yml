@@ -9,7 +9,8 @@ on:
   pull_request:
     branches: [ "main" ]
 
-permissions: write
+permissions: 
+  issues: write
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
