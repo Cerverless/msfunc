@@ -10,6 +10,11 @@
 #include <utime.h>
 
 #define BUF_SIZE 1024
+
+#if (defined(_WIN32) || defined(__WIN32__))
+#define mkdir(A, B) mkdir(A)
+#endif
+
 /*
  * ===  FUNCTION  ======================================================================
  *         Name:  int cmpstr(const char *p1, const char *p2)
@@ -139,6 +144,7 @@ void merge_sort(const char *array1[], const char *array2[], int n) {
 
     //printf("WAREA %s %s \n", w_area[0], w_area[1]);
 
+
     for (int i = 0; i < n; i++) {
         array1[i] = w_area[i];
     }
@@ -243,7 +249,7 @@ int get_lock(char file_or_folder[40]) {
     concat_with_delim(file_or_folder, "lock", lock_file, "/");
     if (stat(lock_file, &stat_buf) == -1) {
         // not claimed ==> make dir and write lock file to claim it
-        mkdir(file_or_folder);
+        mkdir(file_or_folder, 0777);
         write_file(lock_file, NULL, NULL, 0);
         return 0;
     }
@@ -279,7 +285,7 @@ int lock(const char *const job_nr, const char *round, const char *const lock_bas
     concat_with_delim(folder, job_nr, file_or_folder, "/");
 
     if (stat(file_or_folder, &stat_buf) == -1) {
-        if (mkdir(file_or_folder) == -1) {
+        if (mkdir(file_or_folder, 0777) == -1) {
             printf("Catastrophic error: could not create dir %s %s\n", file_or_folder, strerror(errno));
             return 1;
         };
@@ -287,7 +293,7 @@ int lock(const char *const job_nr, const char *round, const char *const lock_bas
 
     concat_with_delim(file_or_folder, round, file_or_folder, "/");
     if (stat(file_or_folder, &stat_buf) == -1) {
-        if (mkdir(file_or_folder) == -1) {
+        if (mkdir(file_or_folder, 0777) == -1) {
             printf("Catastrophic error: could not create dir %s %s\n", file_or_folder, strerror(errno));
             return 1;
         }
