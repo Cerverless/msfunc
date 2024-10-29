@@ -9,12 +9,12 @@ on:
   pull_request:
     branches: [ "main" ]
 
-permissions: 
-  issues: write
+#permissions:
+#  issues: write
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
-  BUILD_TYPE: Release
+  BUILD_TYPE: Debug
 
 jobs:
   build:
@@ -25,9 +25,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-
-   # - name: Make build directory
-   #   run: mkdir build
 
     - name: Setup Ninja
       uses: seanmiddleditch/gha-setup-ninja@v5
