@@ -52,6 +52,6 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./bin/libmsfunc.a
+        asset_path: libmsfunc.a
         asset_name: libmsfunc.a
         asset_content_type: application/gzip
