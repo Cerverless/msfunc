@@ -1,8 +1,21 @@
 #ifndef MSFUNC_LIBRARY_H
 #define MSFUNC_LIBRARY_H
 
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <utime.h>
+
 // Maximum length of input words/elements
 #define MAX_STRING_LENGTH 50
+
+#if (defined(_WIN32) || defined(__WIN32__))
+#define mkdir(A, B) mkdir(A)
+#endif
 
 // TODO following should go into config map
 // Maximum length of files with merge steps

@@ -1,19 +1,6 @@
 #include "library.h"
 
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <sys/stat.h>
-#include <dirent.h>
-#include <utime.h>
-
 #define BUF_SIZE 1024
-
-#if (defined(_WIN32) || defined(__WIN32__))
-#define mkdir(A, B) mkdir(A)
-#endif
 
 /*
  * ===  FUNCTION  ======================================================================
