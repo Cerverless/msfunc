@@ -2,6 +2,9 @@
 
 #define BUF_SIZE 1024
 
+// working area for merge, declared here so its huge memory block can acquired at library load
+char *w_area[2 * 66000];
+
 /*
  * ===  FUNCTION  ======================================================================
  *         Name:  int cmpstr(const char *p1, const char *p2)
@@ -64,14 +67,14 @@ int copy_file(const char *path_from, const char *path_to, int word_amount) {
  *                and secondly lower half in input array1 and second half in input array2
  * =====================================================================================*/
 void merge_sort(const char *array1[], const char *array2[], int n) {
-    // working area
-    char *w_area[2 * n];
 
     int index_result = 0;
     int index_array1 = 0;
     int index_array2 = 0;
     int true_index = 0;
-    while ((index_array1 < n && array1[index_array1] != NULL) && (index_array2 < n && array2[index_array2] != NULL)) {
+
+    while ((index_array1 < n && array1[index_array1] != NULL)
+        && (index_array2 < n && array2[index_array2] != NULL)) {
         true_index++;
 #ifdef  DEBUG
 			printf("MS 1 While %s %s\n", array1[index_array1], array2[index_array2]);
@@ -81,7 +84,7 @@ void merge_sort(const char *array1[], const char *array2[], int n) {
 #ifdef DEBUG
 				printf("MS 2 While: if\n");
 #endif
-            w_area[index_result++] = (array1)[index_array1++];
+            w_area[index_result++] = array1[index_array1++];
         } else {
 #ifdef  DEBUG
 				printf("MS 3 While: else\n");
@@ -125,7 +128,7 @@ void merge_sort(const char *array1[], const char *array2[], int n) {
 #ifdef  DEBUG
 			printf("MS 8 3rd for %d\n", true_index);
 #endif
-        // set unused that arised from assymetrical merge to NULL
+        // set unused that arose from asymmetrical merge to NULL
         w_area[true_index] = NULL;
     }
 
@@ -134,8 +137,6 @@ void merge_sort(const char *array1[], const char *array2[], int n) {
 
     for (int i = 0; i < n; i++) {
         array1[i] = w_area[i];
-    }
-    for (int i = 0; i < n; i++) {
         array2[i] = w_area[n + i];
     }
 
@@ -184,6 +185,60 @@ int write_file(const char *path, const char *elements1[], const char *elements2[
 
 /*
  * ===  FUNCTION  ======================================================================
+ *         Name:  get_2_files_with_lowest_round
+ *  Description: Returns 2 files from lowest possible round
+ *
+ *      Returns: 0 upon success, -1 upon failure
+ * =====================================================================================
+ */
+int get_2_files_with_lowest_round(const char *const folder_path, const char *file_ids[], int *n) {
+    struct dirent *de; // Pointer for directory entry
+
+    // opendir() returns a pointer of DIR type.
+    DIR *dr = opendir(folder_path);
+
+    char file1_path[100] = {0};
+    char file2_path[100] = {0};
+    int file1_round = 999999; // very large so real rounds will trigger lower down
+
+    if (dr == NULL) // opendir returns NULL if couldn't open directory
+    {
+        printf("Could not open current directory: %s\n", strerror(errno));
+        return 1;
+    }
+
+    // Refer http://pubs.opengroup.org/onlinepubs/7990989775/xsh/readdir.html
+    int index = 0;
+    while ((de = readdir(dr)) != NULL) {
+#ifdef DEBUG
+        printf("GNF1 %s \n", de->d_name );
+#endif
+        if (strcmp(".", de->d_name) == 0 || strcmp("..", de->d_name) == 0 || strstr(de->d_name, "lock") != NULL)
+            continue;
+
+        char round[50];
+        extract_round(de->d_name, &round);
+        int round_returned = atoi(round);
+        if (round_returned <= file1_round || strlen(file2_path) == 0) {
+            if (strlen(file1_path) > 0) strcpy(file2_path, file1_path);
+            strcpy(file1_path, de->d_name);
+            file1_round = round_returned;
+            if (index < 2) index++;
+        }
+
+    }
+    *n = index;
+
+    if (index > 0) strcpy(file_ids[0], file1_path);
+    if (index > 1) strcpy(file_ids[1], file2_path);
+
+    closedir(dr);
+    return 0;
+}
+/* -----  end of function get_2_files_with_lowest_round  ----- */
+
+/*
+ * ===  FUNCTION  ======================================================================
  *         Name:  get_n_files
  *  Description: Returns first n files found
  *
@@ -229,7 +284,7 @@ int get_n_files(const char *const folder_path, const char *file_ids[], int *n) {
  *      Returns: 0 upon success, anything else upon failure
  * =====================================================================================
  */
-int get_lock(char file_or_folder[40]) {
+int get_lock(const char* const file_or_folder) {
 
     struct stat stat_buf;
     char lock_file[MAX_FILE_LENGTH];
@@ -247,8 +302,20 @@ int get_lock(char file_or_folder[40]) {
         if (utime(lock_file, NULL) != 0) {
             // touch it so it locks again
             printf("Could not touch lock file %s\n", strerror(errno));
+            return 1;
         }
-        return 0;
+
+        // char *file_ids[2];
+        // char file_name0[MAX_FILE_LENGTH] = {0};
+        // file_ids[0] = file_name0;
+        // char file_name1[MAX_FILE_LENGTH] = {0};
+        // file_ids[1] = file_name1;
+        // int n = 2;
+        // get_n_files(file_or_folder, file_ids, &n);
+        // if (n == 2) {
+            // should be at least two files in folder otherwise it is pointless to release the lock and things might go into an infinite loop
+            return 0;
+        // }
     }
     return 1;
 }
@@ -329,11 +396,25 @@ int read_file(const char *path, const char *elements[], int record_amount) {
         printf("Catastrophic error: could not open file for reading %s %s\n", path, strerror(errno));
         return 1;
     }
-    for (int i = 0; i < record_amount; i++) {
+
+    int i = 0;
+    for (; i < record_amount; i++) {
+    // printf("FUNC %s 1\n", elements[i]);
         if (fgets(elements[i], MAX_STRING_LENGTH, fptr) == NULL) break;
+    // printf("FUNC %s 2\n", elements[i]);
         elements[i] = strtok(elements[i], "\n");
-        if (strlen(elements[i]) == 0) break;
+    // printf("FUNC %s 3\n", elements[i]);
+        if (elements[i] == NULL || strlen(elements[i]) == 0) {
+            // printf("FUNC %s 3,5\n", elements[i]);
+            // elements[i] = NULL;
+            break;
+        }
+    // printf("FUNC 4\n");
     }
+    // for (; i < record_amount; i++) {
+    //     elements[i] = NULL;
+    //     printf("FUNC 5\n");
+    // }
 
 #ifdef DEBUG
     printf("RF Finished reading file\n");

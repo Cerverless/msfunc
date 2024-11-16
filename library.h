@@ -51,6 +51,8 @@ int replace_round (const char* file_name, const char* const new_round);
 
 int extract_round(const char* file_name, char *p_round);
 
-int get_lock(char file_or_folder[40]);
+int get_lock(const char* const file_or_folder);
+
+int get_2_files_with_lowest_round(const char *const folder_path, const char *file_ids[], int *n);
 
 #endif //MSFUNC_LIBRARY_H
